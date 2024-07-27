@@ -29,7 +29,8 @@ switch (process.env.NODE_ENV) {
     case 'test':
     case 'production':
         // @ts-expect-error
-        namespaces = await import('../assets/build/routes.json');
+        namespaces = await import('../assets/build/routes.json', { with: { type: 'json' } });
+        namespaces = namespaces.default;
         break;
     default:
         modules = directoryImport({
@@ -67,13 +68,13 @@ if (Object.keys(modules).length) {
                 for (const path of content.route.path) {
                     namespaces[namespace].routes[path] = {
                         ...content.route,
-                        location: module.split(/[/\\]/).slice(2).join('/'),
+                        location: module.split(/[/\\]/).slice(2).join('/').replace('.ts', '.js'),
                     };
                 }
             } else {
                 namespaces[namespace].routes[content.route.path] = {
                     ...content.route,
-                    location: module.split(/[/\\]/).slice(2).join('/'),
+                    location: module.split(/[/\\]/).slice(2).join('/').replace('.ts', '.js'),
                 };
             }
         }

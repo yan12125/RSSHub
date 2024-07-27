@@ -23,6 +23,8 @@
     "scripts": {
         "build": "tsx scripts/workflow/build-routes.ts",
         "build:docs": "tsx scripts/workflow/build-docs.ts",
+        "build-js": "tsc --noCheck && tsc-alias",
+        "copy-assets": "cp -r ./lib/assets ./dist/lib/",
         "dev": "cross-env NODE_ENV=dev tsx watch --clear-screen=false lib/index.ts",
         "dev:cache": "cross-env NODE_ENV=production tsx watch --clear-screen=false lib/index.ts",
         "format": "prettier \"**/*.{ts,tsx,js,json}\" --write && eslint --cache --fix \"**/*.{ts,tsx,js,yml}\"",
@@ -185,7 +187,8 @@
         "prettier": "3.3.3",
         "remark-parse": "11.0.0",
         "supertest": "7.0.0",
-        "typescript": "5.5.4",
+        "tsc-alias": "1.8.10",
+        "typescript": "5.6.0-dev.20240725",
         "unified": "11.0.5",
         "vite-tsconfig-paths": "4.3.2",
         "vitest": "2.0.4",

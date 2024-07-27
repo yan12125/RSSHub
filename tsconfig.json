@@ -13,11 +13,14 @@
         "noImplicitAny": false,
         "outDir": "./dist",
         "skipLibCheck": true,
-        "noEmit": true,
+        "noEmit": false,
         "incremental": true,
         "resolveJsonModule": true,
         "isolatedModules": true
     },
     "include": ["./lib/**/*", "./api/vercel.ts"],
-    "exclude": ["node_modules", "*.test.*"]
+    "exclude": ["node_modules", "*.test.*"],
+    "tsc-alias": {
+        "resolveFullPaths": true
+    }
 }
