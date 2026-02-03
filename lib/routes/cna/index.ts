@@ -27,10 +27,8 @@ export const route: Route = {
 | headlines | aall | aipl | aopl | acn  | aie  | asc  | ait  | ahel | asoc | aloc | acul | aspt | amov |`,
 };
 
-async function handler(ctx) {
-    const id = ctx.req.param('id') || 'aall';
+async function getData(id, curLimit) {
     const isTopic = /^\d+$/.test(id);
-    const limit = ctx.req.query('limit') ? Number.parseInt(ctx.req.query('limit'), 10) : 20;
 
     // The API used by the website when hitting "看更多內容"
     const { data: response } = await got({
@@ -40,7 +38,7 @@ async function handler(ctx) {
             action: '0',
             category: isTopic ? 'newstopic' : id,
             tno: isTopic ? id : undefined,
-            pagesize: limit,
+            pagesize: curLimit,
             pageidx: 1,
         },
     });
@@ -49,7 +47,7 @@ async function handler(ctx) {
         ResultData: { MetaData: metadata },
         ResultData: resultData,
     } = response;
-    const list = (isTopic ? resultData.Topic.NewsItems : resultData.Items).slice(0, limit).map((item) => ({
+    const list = (isTopic ? resultData.Topic.NewsItems : resultData.Items).slice(0, curLimit).map((item) => ({
         title: item.HeadLine,
         link: item.PageUrl,
         pubDate: timezone(parseDate(item.CreateTime), +8),
@@ -57,11 +55,28 @@ async function handler(ctx) {
 
     const items = await Promise.all(list.map((item) => cache.tryGet(item.link, async () => await getFullText(item))));
 
-    return {
-        title: metadata.Title,
-        description: metadata.Description,
-        link: metadata.CanonicalUrl,
-        image: metadata.Image,
-        item: items,
+    return { metadata, items };
+}
+
+async function handler(ctx) {
+    const id = ctx.req.param('id') || 'aall';
+    const limit = ctx.req.query('limit') ? Number.parseInt(ctx.req.query('limit'), 10) : 20;
+
+    let ret = {
+        item: [],
     };
+
+    while (ret.item.length < limit) {
+        const { metadata, items } = await getData(id, Math.min(20, limit - ret.item.length));
+
+        Object.assign(ret, {
+            title: metadata.Title,
+            description: metadata.Description,
+            link: metadata.CanonicalUrl,
+            image: metadata.Image,
+        });
+        ret.item = ret.item.concat(items);
+    }
+
+    return ret;
 }
